@@ -1,31 +1,33 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { CertificatePreview } from "@/components/CertificatePreview";
+import { FileDrop } from "@/components/FileDrop";
+import { Steps } from "@/components/Steps";
+import { Topbar } from "@/components/Topbar";
 import type { ExtractResult } from "@/lib/types";
 
 export default function Home() {
   const [curvaFile, setCurvaFile] = useState<File | null>(null);
   const [comunicadoFile, setComunicadoFile] = useState<File | null>(null);
-  const [numeroCertificado, setNumeroCertificado] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [resultado, setResultado] = useState<ExtractResult | null>(null);
+  const [copiado, setCopiado] = useState(false);
+  const [rodada, setRodada] = useState(0);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!curvaFile || !comunicadoFile) {
-      setErro("Selecione o PDF da curva e o PDF do comunicado.");
+      setErro("Envie os dois PDFs: a curva de tratamento e o comunicado.");
       return;
     }
     setLoading(true);
     setErro(null);
-    setResultado(null);
 
     const formData = new FormData();
     formData.append("curva", curvaFile);
     formData.append("comunicado", comunicadoFile);
-    formData.append("numeroCertificado", numeroCertificado);
 
     try {
       const res = await fetch("/api/extract", { method: "POST", body: formData });
@@ -34,84 +36,88 @@ export default function Home() {
         setErro(data.error ?? "Erro ao processar os arquivos.");
       } else {
         setResultado(data as ExtractResult);
+        setCopiado(false);
+        setRodada((n) => n + 1);
       }
     } catch {
-      setErro("Não foi possível conectar à API.");
+      setErro("Não foi possível conectar ao servidor. Tente novamente.");
     } finally {
       setLoading(false);
     }
   }
 
+  function novoCertificado() {
+    setResultado(null);
+    setCurvaFile(null);
+    setComunicadoFile(null);
+    setCopiado(false);
+    setErro(null);
+  }
+
   return (
-    <div className="min-h-screen bg-zinc-50 py-10 px-4">
-      <main className="max-w-3xl mx-auto flex flex-col gap-8">
-        <header>
-          <h1 className="text-2xl font-semibold text-zinc-900">
-            Preenchimento do Certificado TFQ-HT
-          </h1>
-          <p className="text-zinc-600 text-sm mt-1">
-            Envie a curva de tratamento (Digisystem CRG08) e o Comunicado de Tratamento em PDF.
-            Os dados do certificado são extraídos automaticamente — confira e ajuste antes de
-            copiar para o SEI.
-          </p>
-        </header>
+    <>
+      <Topbar />
+      <main>
+        <Steps atual={!resultado ? 1 : copiado ? 3 : 2} />
 
-        <form onSubmit={onSubmit} className="bg-white border rounded-md p-5 flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-zinc-700">
-              Curva de tratamento (PDF do Digisystem, qualquer um dos 2 layouts)
-            </label>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setCurvaFile(e.target.files?.[0] ?? null)}
-              className="text-sm"
-            />
-          </div>
+        {!resultado ? (
+          <form className="view" onSubmit={onSubmit}>
+            <p className="lead">
+              Envie a <b>curva de tratamento</b> (PDF do equipamento) e o <b>comunicado de tratamento</b> do
+              mesmo serviço. Os dados do certificado são preenchidos automaticamente — você só confere e cola
+              no SEI.
+            </p>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-zinc-700">
-              Comunicado de Tratamento (PDF)
-            </label>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setComunicadoFile(e.target.files?.[0] ?? null)}
-              className="text-sm"
-            />
-          </div>
+            <div className="drops">
+              <FileDrop
+                titulo="Curva de tratamento"
+                dica="Arraste o PDF aqui ou clique para escolher (ex.: 1495 MANN 189.pdf)"
+                arquivo={curvaFile}
+                onArquivo={setCurvaFile}
+              />
+              <FileDrop
+                titulo="Comunicado de tratamento"
+                dica="Arraste o PDF aqui ou clique para escolher (ex.: COMUNICADO 1559-2026…pdf)"
+                arquivo={comunicadoFile}
+                onArquivo={setComunicadoFile}
+              />
+            </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-zinc-700">
-              Número do Certificado (opcional — se vazio, tenta deduzir do nome do arquivo da curva)
-            </label>
-            <input
-              type="text"
-              value={numeroCertificado}
-              onChange={(e) => setNumeroCertificado(e.target.value)}
-              placeholder="ex: 1480/2026"
-              className="border rounded px-3 py-2 text-sm max-w-xs"
-            />
-          </div>
+            {erro && (
+              <div className="alert-box critical" role="alert">
+                <h4>Não foi possível continuar</h4>
+                <ul>
+                  <li>{erro}</li>
+                </ul>
+              </div>
+            )}
 
-          {erro && <p className="text-red-600 text-sm">{erro}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="self-start bg-zinc-900 hover:bg-zinc-800 disabled:opacity-50 text-white font-medium px-4 py-2 rounded-md text-sm"
-          >
-            {loading ? "Extraindo..." : "Extrair dados"}
-          </button>
-        </form>
-
-        {resultado && (
+            <div className="actions">
+              <button type="submit" className="btn primary lg" disabled={loading}>
+                {loading ? "Lendo os PDFs…" : "Extrair dados"}
+              </button>
+              <span className="hint">
+                O número do certificado é deduzido do nome do arquivo da curva (ex.: “1495” em
+                “1495 MANN 189.pdf”).
+              </span>
+            </div>
+          </form>
+        ) : (
           <CertificatePreview
+            key={rodada}
             camposIniciais={resultado.campos}
             avisos={resultado.avisos}
+            clienteEncontrado={resultado.clienteEncontrado}
+            onNovo={novoCertificado}
+            onCopiado={() => setCopiado(true)}
           />
         )}
       </main>
-    </div>
+
+      <footer className="note">
+        MANN Tratamentos Fitossanitários · EXATA Ambiental — os PDFs são usados apenas para extrair os
+        dados e não ficam armazenados. Confira sempre o certificado antes de assinar no SEI.
+      </footer>
+    </>
   );
 }
