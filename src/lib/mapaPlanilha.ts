@@ -38,16 +38,6 @@ export function linhaParaTsv(linha: MapaLinha): string {
   return COLUNAS_MAPA.map((c) => limpar(linha[c.key])).join("\t");
 }
 
-export function cabecalhoTsv(): string {
-  return COLUNAS_MAPA.map((c) => c.titulo).join("\t");
-}
-
-/** "24/09/2026" -> "2026-09-24" (para filtrar por mês no banco). */
-export function dataBrParaIso(data: string | undefined): string | null {
-  const m = (data ?? "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  return m ? `${m[3]}-${m[2]}-${m[1]}` : null;
-}
-
 export function linhaVazia(): MapaLinha {
   return Object.fromEntries(COLUNAS_MAPA.map((c) => [c.key, ""])) as MapaLinha;
 }

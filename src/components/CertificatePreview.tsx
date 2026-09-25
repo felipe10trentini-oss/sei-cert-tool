@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CertificadoCampos } from "@/lib/types";
 import { LINHAS, ROTULOS, type CampoComRotulo } from "@/lib/certificadoFields";
 import { buildCertificadoHtml } from "@/lib/certificadoTemplate";
-import type { MapaLinha } from "@/lib/mapaPlanilha";
+import { linhaParaTsv, type MapaKey, type MapaLinha } from "@/lib/mapaPlanilha";
 import { LinhaMapaCard } from "./LinhaMapaCard";
 
 interface Props {
@@ -34,6 +34,7 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
   const [campos, setCampos] = useState<CertificadoCampos>(camposIniciais);
   const [editando, setEditando] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [linhaMapa, setLinhaMapa] = useState<MapaLinha | undefined>(mapa);
   const docRef = useRef<HTMLDivElement>(null);
 
   const html = useMemo(() => buildCertificadoHtml(campos), [campos]);
@@ -66,6 +67,23 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
     } catch {
       setToast("Não foi possível copiar. Permita o acesso à área de transferência e tente de novo.");
     }
+  }
+
+  // O nº do certificado é editado no topo da tela: a linha do relatório acompanha.
+  const linhaMapaAtual = linhaMapa ? { ...linhaMapa, numCertificado: campos.numeroCertificado } : undefined;
+
+  async function copiarLinhaRelatorio() {
+    if (!linhaMapaAtual) return;
+    try {
+      await navigator.clipboard.writeText(linhaParaTsv(linhaMapaAtual));
+      setToast("Linha copiada! Cole na coluna A da próxima linha vazia da aba TÉRMICO.");
+    } catch {
+      setToast("Não foi possível copiar. Permita o acesso à área de transferência e tente de novo.");
+    }
+  }
+
+  function ajustarLinha(key: MapaKey, valor: string) {
+    setLinhaMapa((l) => (l ? { ...l, [key]: valor } : l));
   }
 
   const termino = campos["3.14_horarioTermino"];
@@ -149,8 +167,13 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
         <button type="button" className="btn" onClick={onNovo}>
           Novo certificado
         </button>
+        {linhaMapaAtual && (
+          <button type="button" className="btn lg" onClick={copiarLinhaRelatorio}>
+            Copiar linha do relatório
+          </button>
+        )}
         <button type="button" className="btn primary lg" onClick={copiar}>
-          Copiar formatado
+          Copiar certificado
         </button>
       </div>
 
@@ -191,11 +214,13 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
 
       <div className="toolbar" style={{ marginTop: 18, justifyContent: "flex-end" }}>
         <button type="button" className="btn primary lg" onClick={copiar}>
-          Copiar formatado
+          Copiar certificado
         </button>
       </div>
 
-      {mapa && <LinhaMapaCard linhaInicial={mapa} numeroCertificado={campos.numeroCertificado} />}
+      {linhaMapaAtual && (
+        <LinhaMapaCard linha={linhaMapaAtual} onAjustar={ajustarLinha} onCopiar={copiarLinhaRelatorio} />
+      )}
 
       {toast && (
         <div id="toast-host" role="status">

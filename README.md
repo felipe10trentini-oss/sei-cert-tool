@@ -56,10 +56,9 @@ Abre em http://localhost:3000
 
 - **Aba Clientes**: envie a planilha de clientes (aba DADOS) e o site cadastra os novos e atualiza os alterados
   (comparando pelo CNPJ), mostrando antes o que vai mudar. Nunca apaga clientes.
-- **Aba Planilha MAPA**: cada certificado gerado produz a linha da aba TÉRMICO (colunas A–Z). Na tela de emissão
-  use "Copiar linha" (cola direto no Excel) ou "Salvar na planilha do mês"; em Planilha MAPA escolha o mês,
-  complete o nº do processo do certificado e copie todas as linhas de uma vez.
-- Rode também o trecho `certificados_emitidos` de `supabase/schema.sql` no SQL Editor (cria a tabela das linhas salvas).
+- **Linha do relatório do MAPA**: depois de extrair os PDFs, o botão "Copiar linha do relatório" copia a linha da
+  aba TÉRMICO (colunas A–Z, separadas por tab) para colar na coluna A da próxima linha vazia da planilha. O nº do
+  processo do certificado (coluna Y) sai em branco: só existe depois que o SEI gera o certificado.
 - As áreas que gravam dados pedem a **senha da equipe** (variável `TEAM_PASSWORD`, no `.env.local` e na Vercel).
   É uma proteção provisória até existir login por usuário.
 - `npm run regress:mapa` compara a linha gerada com linhas reais já lançadas na planilha.
