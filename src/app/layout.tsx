@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { Topbar } from "@/components/Topbar";
 import "./globals.css";
 
 const barlow = Barlow_Condensed({
@@ -29,7 +30,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="pt-BR" className={`${barlow.variable} ${plexSans.variable} ${plexMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        <Topbar />
+        <main>{children}</main>
+        <footer className="note">
+          MANN Tratamentos Fitossanitários · EXATA Ambiental — os PDFs são usados apenas para extrair os
+          dados e não ficam armazenados. Confira sempre o certificado antes de assinar no SEI.
+        </footer>
+      </body>
     </html>
   );
 }

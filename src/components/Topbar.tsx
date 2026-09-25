@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Nav } from "./Nav";
 
 export function Topbar() {
   return (
@@ -13,6 +14,7 @@ export function Topbar() {
           <span>Certificado de tratamento fitossanitário · preenchimento automático do SEI</span>
         </div>
       </div>
+      <Nav />
     </header>
   );
 }

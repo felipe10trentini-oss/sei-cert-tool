@@ -16,7 +16,23 @@ if (!dir) {
   console.error("Defina CERT_DIR com a pasta que contém os PDFs.");
   process.exit(1);
 }
-const files = fs.readdirSync(dir);
+// Procura recursivamente (os PDFs ficam em subpastas por mês: Gráficos, Certificados, Comunicados).
+const caminhos = new Map();
+(function walk(d) {
+  for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+    if (e.isDirectory()) walk(path.join(d, e.name));
+    else {
+      // Os números de certificado recomeçam todo ano: em caso de nome repetido, vale o de 2026.
+      const atual = caminhos.get(e.name);
+      const novo = path.join(d, e.name);
+      if (!atual || (!atual.includes(`${path.sep}2026${path.sep}`) && novo.includes(`${path.sep}2026${path.sep}`))) {
+        caminhos.set(e.name, novo);
+      }
+    }
+  }
+})(dir);
+const em2026 = (n) => caminhos.get(n).includes(`${path.sep}2026${path.sep}`);
+const files = [...caminhos.keys()].sort((a, b) => Number(em2026(b)) - Number(em2026(a)));
 
 const ROTULOS = [
   ["1.1", "1.1. Razão social:"], ["1.2", "1.2. CNPJ:"], ["1.3", "1.3. Nº de registro no CREA:"],
@@ -71,15 +87,15 @@ for (const num of process.argv.slice(2)) {
   const certName = files.find((f) => f.startsWith(`CERT ${num} `));
   const curvaName = files.find((f) => f.startsWith(`${num} MANN `) && !f.includes("SEI"));
   if (!certName || !curvaName) { console.log(num, "arquivos não encontrados"); continue; }
-  const cert = parseFields(await pdfText(fs.readFileSync(path.join(dir, certName))));
+  const cert = parseFields(await pdfText(fs.readFileSync(caminhos.get(certName))));
   const m = cert["3.1"]?.match(/(\d+)\/(\d{4})(-[A-Z0-9]+)?/);
   const comName = m && files.find((f) => f.startsWith(`COMUNICADO ${m[1]}-${m[2]}${m[3] ?? ""}`) &&
     (m[3] ? true : !/^COMUNICADO \d+-\d{4}-[A-Z]/.test(f)));
   if (!comName) { console.log(num, "comunicado não encontrado"); continue; }
 
   const form = new FormData();
-  form.append("curva", new Blob([fs.readFileSync(path.join(dir, curvaName))], { type: "application/pdf" }), curvaName);
-  form.append("comunicado", new Blob([fs.readFileSync(path.join(dir, comName))], { type: "application/pdf" }), comName);
+  form.append("curva", new Blob([fs.readFileSync(caminhos.get(curvaName))], { type: "application/pdf" }), curvaName);
+  form.append("comunicado", new Blob([fs.readFileSync(caminhos.get(comName))], { type: "application/pdf" }), comName);
   const res = await fetch("http://localhost:3000/api/extract", { method: "POST", body: form });
   const data = await res.json();
   if (!res.ok) { console.log(num, "erro API", data); continue; }

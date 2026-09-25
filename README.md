@@ -52,12 +52,24 @@ Abre em http://localhost:3000
 
    Roda de novo (com a planilha atualizada) sempre que precisar sincronizar.
 
+## Clientes e planilha do MAPA
+
+- **Aba Clientes**: envie a planilha de clientes (aba DADOS) e o site cadastra os novos e atualiza os alterados
+  (comparando pelo CNPJ), mostrando antes o que vai mudar. Nunca apaga clientes.
+- **Aba Planilha MAPA**: cada certificado gerado produz a linha da aba TÉRMICO (colunas A–Z). Na tela de emissão
+  use "Copiar linha" (cola direto no Excel) ou "Salvar na planilha do mês"; em Planilha MAPA escolha o mês,
+  complete o nº do processo do certificado e copie todas as linhas de uma vez.
+- Rode também o trecho `certificados_emitidos` de `supabase/schema.sql` no SQL Editor (cria a tabela das linhas salvas).
+- As áreas que gravam dados pedem a **senha da equipe** (variável `TEAM_PASSWORD`, no `.env.local` e na Vercel).
+  É uma proteção provisória até existir login por usuário.
+- `npm run regress:mapa` compara a linha gerada com linhas reais já lançadas na planilha.
+
 ## Deploy (Vercel)
 
 1. Suba este repositório para o GitHub.
 2. Importe o repositório em https://vercel.com/new.
 3. Em Environment Variables, adicione `SUPABASE_URL` e
-   `SUPABASE_SERVICE_ROLE_KEY` (os mesmos valores do `.env.local`).
+   `SUPABASE_SERVICE_ROLE_KEY` e `TEAM_PASSWORD` (os mesmos valores do `.env.local`).
 4. Deploy.
 
 ## Estrutura

@@ -32,7 +32,7 @@ export function parseCurvaCRG08(text: string): CurvaData {
   const mTempo = text.match(/Tempo do Tratamento \(tt\):\s*(\d+)\s*minuto/);
   const mResp = text.match(/Responsável Técnico:\s*(.+)/);
   const mOperador = text.match(/Operador:\s*(.+)/);
-  const mVolume = text.match(/Volume total:\s*(\d+)\s*peças/);
+  const mVolume = text.match(/Volume total:\s*(\d+)\s*peças/i);
   const mDescricao = text.match(/Descrição:\s*(.+)/);
   const mSerie = text.match(/Relatório do Controlador Nº (\d+) \(Nº Série:\s*([\w-]+)\)/);
 
@@ -58,6 +58,7 @@ export function parseCurvaCRG08(text: string): CurvaData {
     controladorSerie: mSerie ? mSerie[2] : null,
     dataInicio,
     dataTermino: dataInicio,
+    horaInicio: horaInicio ? horaInicio.slice(0, 5) : null,
     horaInicioFmt,
     horaTerminoEstimada,
     temperaturaControle: mTc ? mTc[1] : null,

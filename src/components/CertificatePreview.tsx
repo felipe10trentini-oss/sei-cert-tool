@@ -4,11 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CertificadoCampos } from "@/lib/types";
 import { LINHAS, ROTULOS, type CampoComRotulo } from "@/lib/certificadoFields";
 import { buildCertificadoHtml } from "@/lib/certificadoTemplate";
+import type { MapaLinha } from "@/lib/mapaPlanilha";
+import { LinhaMapaCard } from "./LinhaMapaCard";
 
 interface Props {
   camposIniciais: CertificadoCampos;
   avisos: string[];
   clienteEncontrado: boolean;
+  mapa?: MapaLinha;
   onNovo: () => void;
   onCopiado: () => void;
 }
@@ -27,7 +30,7 @@ const CHAVES_EDITAVEIS: CampoComRotulo[] = LINHAS.flatMap((linha) => {
   return [];
 });
 
-export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, onNovo, onCopiado }: Props) {
+export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, mapa, onNovo, onCopiado }: Props) {
   const [campos, setCampos] = useState<CertificadoCampos>(camposIniciais);
   const [editando, setEditando] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -191,6 +194,8 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
           Copiar formatado
         </button>
       </div>
+
+      {mapa && <LinhaMapaCard linhaInicial={mapa} numeroCertificado={campos.numeroCertificado} />}
 
       {toast && (
         <div id="toast-host" role="status">

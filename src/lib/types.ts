@@ -33,6 +33,7 @@ export interface CurvaData {
   controladorSerie: string | null;
   dataInicio: string | null;
   dataTermino: string | null;
+  horaInicio: string | null;
   horaInicioFmt: string | null;
   horaTerminoEstimada: string | null;
   temperaturaControle: string | null;
@@ -81,4 +82,5 @@ export interface ExtractResult {
   campos: CertificadoCampos;
   avisos: string[];
   clienteEncontrado: boolean;
+  mapa?: import("./mapaPlanilha").MapaLinha;
 }

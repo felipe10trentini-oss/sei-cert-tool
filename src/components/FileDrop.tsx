@@ -7,20 +7,22 @@ interface Props {
   dica: string;
   arquivo: File | null;
   onArquivo: (file: File | null) => void;
+  accept?: string;
+  aceita?: (file: File) => boolean;
 }
 
 function tamanho(bytes: number): string {
   return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.ceil(bytes / 1024)} KB`;
 }
 
-export function FileDrop({ titulo, dica, arquivo, onArquivo }: Props) {
+export function FileDrop({ titulo, dica, arquivo, onArquivo, accept = "application/pdf", aceita }: Props) {
   const [sobre, setSobre] = useState(false);
 
   function aoSoltar(e: DragEvent<HTMLLabelElement>) {
     e.preventDefault();
     setSobre(false);
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type === "application/pdf") onArquivo(file);
+    if (file && (aceita ? aceita(file) : file.type === "application/pdf")) onArquivo(file);
   }
 
   return (
@@ -35,7 +37,7 @@ export function FileDrop({ titulo, dica, arquivo, onArquivo }: Props) {
     >
       <input
         type="file"
-        accept="application/pdf"
+        accept={accept}
         onChange={(e) => onArquivo(e.target.files?.[0] ?? null)}
       />
       <svg className="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">

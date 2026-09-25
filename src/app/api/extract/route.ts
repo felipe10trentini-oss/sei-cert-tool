@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractPdfText } from "@/lib/pdfText";
+import { extractPdf } from "@/lib/pdfText";
 import { parseComunicado } from "@/lib/parseComunicado";
 import { parseCurvaCRG08 } from "@/lib/parseCurvaCRG08";
 import { buildCertificado } from "@/lib/buildCertificado";
 import { lookupClienteByCnpj } from "@/lib/clientes";
 import { guessNumeroCertificado } from "@/lib/numeroCertificado";
+import { buildLinhaMapa } from "@/lib/buildMapa";
 
 export const runtime = "nodejs";
 
@@ -27,13 +28,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const [curvaText, comunicadoText] = await Promise.all([
-      extractPdfText(await fileToBuffer(curvaFile)),
-      extractPdfText(await fileToBuffer(comunicadoFile)),
+    const [curvaPdf, comunicadoPdf] = await Promise.all([
+      extractPdf(await fileToBuffer(curvaFile)),
+      extractPdf(await fileToBuffer(comunicadoFile)),
     ]);
 
-    const curva = parseCurvaCRG08(curvaText);
-    const comunicado = parseComunicado(comunicadoText);
+    const curva = parseCurvaCRG08(curvaPdf.text);
+    const comunicado = parseComunicado(comunicadoPdf.text);
 
     let cliente = null;
     try {
@@ -50,7 +51,14 @@ export async function POST(req: NextRequest) {
 
     const resultado = buildCertificado(curva, comunicado, cliente, numeroCertificado);
 
-    return NextResponse.json(resultado);
+    const mapa = buildLinhaMapa({
+      curva,
+      comunicado,
+      dataComunicado: comunicadoPdf.criadoEm,
+      numeroCertificado,
+    });
+
+    return NextResponse.json({ ...resultado, mapa });
   } catch (err) {
     console.error("Falha ao extrair PDFs", err);
     return NextResponse.json(

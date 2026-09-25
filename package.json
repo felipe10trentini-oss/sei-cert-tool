@@ -8,11 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "import:clientes": "tsx scripts/import-clientes.ts",
-    "regress": "node scripts/regress.mjs"
+    "regress": "node scripts/regress.mjs",
+    "regress:mapa": "node scripts/regress-mapa.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.9",
     "@supabase/supabase-js": "^2.117.1",
+    "exceljs": "^4.4.0",
     "next": "16.3.6",
     "pdf-parse": "^2.4.5",
     "react": "19.2.8",

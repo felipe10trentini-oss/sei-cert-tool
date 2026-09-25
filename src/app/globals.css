@@ -197,3 +197,32 @@ select:focus, input:focus, textarea:focus { outline: 2px solid var(--accent-2); 
 .view { animation: fade 0.25s ease; }
 @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 footer.note { margin-top: 34px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 14px; }
+
+/* ---------- Navegação por abas (igual ao Controle GLP) ---------- */
+nav.tabs { display: flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 999px; flex-wrap: wrap; }
+nav.tabs a {
+  color: var(--text-muted); padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600;
+  text-decoration: none; transition: background 0.15s, color 0.15s;
+}
+nav.tabs a.active { background: var(--accent); color: var(--accent-ink); }
+nav.tabs a:not(.active):hover { color: var(--text); }
+
+/* ---------- Tabelas ---------- */
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+table.dados { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.dados thead th {
+  text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);
+  padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--surface);
+}
+table.dados tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+table.dados tbody tr:last-child td { border-bottom: none; }
+table.dados tbody tr:hover { background: var(--surface-2); }
+.empty-row { text-align: center; color: var(--text-muted); padding: 26px !important; }
+.btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+.btn.danger { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(10, 14, 12, 0.5); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
+.modal { background: var(--surface); border-radius: 14px; border: 1px solid var(--border); padding: 22px; width: 100%; max-width: 760px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+.modal h3 { margin: 0 0 14px; font-size: 20px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.form-grid.tres { grid-template-columns: 1fr 1fr 1fr; }
+@media (max-width: 720px) { .form-grid.tres { grid-template-columns: 1fr; } }

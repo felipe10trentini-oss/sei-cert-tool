@@ -19,3 +19,21 @@ export const MODALIDADE_TEXTO =
 export const DESTINO_FIXO = "Estoque";
 export const VOLUMES_FIXO = "Nihil";
 export const MARCAS_DISTINTIVAS_FIXO = "Nihil";
+
+// Planilha de controle do MAPA (aba TÉRMICO): valores que se repetem em todas as linhas.
+export const MAPA_CONSTANTES = {
+  objetivo: "Atendimento à NIMF15",
+  finalidade: "Exp.",
+  processoComunicado: "21034.012876/2026-29",
+  unidades: "Unidades",
+  volumeCamara: "56",
+} as const;
+
+// "Unidade volante" do comunicado -> placa do veículo (coluna "Identificação da unidade de tratamento").
+export const PLACA_POR_UNIDADE: Record<string, string> = {
+  "Unidade 1": "ATU 0929",
+  "Unidade 2": "RHV3A66",
+  "Unidade 3": "JCV8C11",
+  "Unidade 4": "RIX2I54",
+  "Unidade 5": "TQV2A94",
+};

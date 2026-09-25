@@ -4,7 +4,6 @@ import { useState, type FormEvent } from "react";
 import { CertificatePreview } from "@/components/CertificatePreview";
 import { FileDrop } from "@/components/FileDrop";
 import { Steps } from "@/components/Steps";
-import { Topbar } from "@/components/Topbar";
 import type { ExtractResult } from "@/lib/types";
 
 export default function Home() {
@@ -56,8 +55,7 @@ export default function Home() {
 
   return (
     <>
-      <Topbar />
-      <main>
+      <div>
         <Steps atual={!resultado ? 1 : copiado ? 3 : 2} />
 
         {!resultado ? (
@@ -108,16 +106,12 @@ export default function Home() {
             camposIniciais={resultado.campos}
             avisos={resultado.avisos}
             clienteEncontrado={resultado.clienteEncontrado}
+            mapa={resultado.mapa}
             onNovo={novoCertificado}
             onCopiado={() => setCopiado(true)}
           />
         )}
-      </main>
-
-      <footer className="note">
-        MANN Tratamentos Fitossanitários · EXATA Ambiental — os PDFs são usados apenas para extrair os
-        dados e não ficam armazenados. Confira sempre o certificado antes de assinar no SEI.
-      </footer>
+      </div>
     </>
   );
 }
