@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "import:clientes": "tsx scripts/import-clientes.ts"
+    "import:clientes": "tsx scripts/import-clientes.ts",
+    "regress": "node scripts/regress.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.9",

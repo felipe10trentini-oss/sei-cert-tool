@@ -5,10 +5,17 @@ Quarentenários (SEI/MAPA) a partir da curva de tratamento (Digisystem CRG08)
 e do Comunicado de Tratamento em PDF, e gera um bloco de texto formatado
 pronto para colar no editor do SEI.
 
-Hoje cobre apenas o equipamento **Digisystem CRG08**. Os outros 3 modelos
+Hoje cobre o **Digisystem CRG08** nos dois layouts de curva (lote como
+`NTrat: 225` ou `NSec 189`; o parser reconhece sozinho). Os outros modelos
 (Marrari SV580, Marrari SV520, Digisystem CRG2051) podem ser adicionados
-depois criando um novo parser em `src/lib/parseCurva<Modelo>.ts` e
-selecionando-o na tela de upload.
+depois criando um novo parser em `src/lib/parseCurva<Modelo>.ts`.
+
+Teste de regressão contra certificados já emitidos (com `npm run dev` rodando):
+
+```powershell
+$env:CERT_DIR = "C:\pasta\com\os\PDFs"   # CERT NNNN ..., NNNN MANN LLL.pdf e COMUNICADO ...
+npm run regress -- 1489 1495
+```
 
 ## Como funciona
 

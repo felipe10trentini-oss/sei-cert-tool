@@ -43,7 +43,12 @@ export function buildCertificado(
   }
 
   if (!curva.loteCiclo) {
-    avisos.push("Não foi possível localizar o número de lote/ciclo (NTrat) na curva.");
+    avisos.push("Não foi possível localizar o número de lote/ciclo (NTrat/NSec) na curva.");
+  }
+  if (!curva.dataInicio || !curva.horaInicioFmt || !curva.duracaoMin || !curva.temperaturaTratamento) {
+    avisos.push(
+      "Não foi possível ler início, temperatura ou duração do tratamento na curva — o layout do PDF pode ser diferente dos 2 já suportados."
+    );
   }
   if (!comunicado.comunicadoNumero) {
     avisos.push("Não foi possível localizar o número do Comunicado de Tratamento.");

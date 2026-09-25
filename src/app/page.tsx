@@ -59,7 +59,7 @@ export default function Home() {
         <form onSubmit={onSubmit} className="bg-white border rounded-md p-5 flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-zinc-700">
-              Curva de tratamento (PDF, Digisystem CRG08)
+              Curva de tratamento (PDF do Digisystem, qualquer um dos 2 layouts)
             </label>
             <input
               type="file"

@@ -20,9 +20,12 @@ function addMinutesFmt(horaHHMMSS: string, minutes: number): string {
  * Extrai os dados da curva de tratamento do controlador Digisystem CRG08.
  */
 export function parseCurvaCRG08(text: string): CurvaData {
-  const mNtrat = text.match(/NTrat:\s*(\d+)/);
+  // Dois layouts de curva do mesmo sistema:
+  //  1) "(NTrat: 225)" e "Início do Tratamento na leitura 94 - 23/09/2026 09:42:00(concluído)"
+  //  2) "(NSec 189)" e "Início do tratamento na leitura 123 (Fase 1) - 24/09/2026 10:05 (concluído)"
+  const mNtrat = text.match(/NTrat:\s*(\d+)/) ?? text.match(/NSec:?\s*(\d+)/);
   const mInicio = text.match(
-    /Início do Tratamento na leitura \d+\s*-\s*(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2}:\d{2})/
+    /In[íi]cio do Tratamento na leitura \d+(?:\s*\(Fase \d+\))?\s*-\s*(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2}(?::\d{2})?)/i
   );
   const mTc = text.match(/Temperatura de Controle \(Tc\):\s*(\d+)\s*º?C/);
   const mTt = text.match(/Temperatura do Tratamento \(Tt\):\s*(\d+)\s*º?C/);
