@@ -49,7 +49,8 @@ export function parseCurvaCRG08(text: string): CurvaData {
   }
 
   return {
-    loteCiclo: mNtrat ? mNtrat[1] : null,
+    // O certificado usa o lote com 3 dígitos (a curva imprime "NTrat: 10", o certificado "010").
+    loteCiclo: mNtrat ? mNtrat[1].padStart(3, "0") : null,
     controladorNumero: mSerie ? mSerie[1] : null,
     controladorSerie: mSerie ? mSerie[2] : null,
     dataInicio,

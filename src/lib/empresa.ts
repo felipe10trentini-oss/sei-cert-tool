@@ -9,7 +9,7 @@ export const EMPRESA = {
   endereco: "Rua Ronald José Carboni, 330 - CEP: 82.810-120 - Curitiba - PR",
   telefone: "(41) 3107-1515",
   email: "tratamentosmann@gmail.com",
-  codigoMapa: "BRPR0765",
+  codigoMapa: "BR-PR0765",
   localEmissao: "Curitiba - PR",
   responsavelTecnico: "Geraldo Adolfo Mann",
 } as const;

@@ -7,6 +7,16 @@ import {
 } from "./empresa";
 import type { CurvaData, ComunicadoData, Cliente, ExtractResult } from "./types";
 
+/**
+ * Quando o comunicado traz só o número ("400"), o certificado escreve a
+ * quantidade com o produto: "400 paletes" (produto "Paletes de madeira").
+ */
+function completarQuantidade(quantidade: string | null, produto: string | null): string | null {
+  if (!quantidade || !/^\d+$/.test(quantidade.trim()) || !produto) return quantidade;
+  const unidade = produto.replace(/\s+de madeira\s*$/i, "").trim().toLowerCase();
+  return unidade ? `${quantidade.trim()} ${unidade}` : quantidade;
+}
+
 export function buildCertificado(
   curva: CurvaData,
   comunicado: ComunicadoData,
@@ -21,7 +31,8 @@ export function buildCertificado(
 
   if (cliente) {
     enderecoCliente = cliente.enderecoEscritorio || cliente.endereco;
-    telefoneCliente = cliente.telefone;
+    // Vários telefones: o certificado separa com " / " (a planilha traz "a/ b").
+    telefoneCliente = cliente.telefone?.replace(/\s*\/\s*/g, " / ") ?? null;
     emailCliente = cliente.email;
   } else {
     avisos.push(
@@ -43,7 +54,7 @@ export function buildCertificado(
 
   const temperaturaDuracao =
     curva.temperaturaTratamento && curva.duracaoMin
-      ? `${curva.temperaturaTratamento} °C / ${curva.duracaoMin} min`
+      ? `${curva.temperaturaTratamento} °C / Duração: ${curva.duracaoMin} min`
       : null;
 
   const campos = {
@@ -61,11 +72,11 @@ export function buildCertificado(
     "2.4_telefoneCliente": telefoneCliente,
     "2.5_emailCliente": emailCliente,
     "3.1_numeroComunicado": comunicado.comunicadoNumero,
-    "3.2_enderecoTratamento": enderecoCliente,
+    "3.2_enderecoTratamento": comunicado.enderecoTratamento ?? cliente?.endereco ?? enderecoCliente,
     "3.3_destino": DESTINO_FIXO,
     "3.4_descricaoProduto": comunicado.produto,
     "3.5_volumes": VOLUMES_FIXO,
-    "3.6_quantidade": comunicado.quantidade,
+    "3.6_quantidade": completarQuantidade(comunicado.quantidade, comunicado.produto),
     "3.7_lote": curva.loteCiclo,
     "3.8_ciclo": curva.loteCiclo,
     "3.9_marcasDistintivas": MARCAS_DISTINTIVAS_FIXO,

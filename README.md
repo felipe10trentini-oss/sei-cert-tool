@@ -17,7 +17,7 @@ selecionando-o na tela de upload.
    campos do certificado. O telefone/e-mail do cliente vêm de uma tabela
    `clientes` no Supabase (busca por CNPJ).
 3. Você confere/edita os campos na tela e clica em **Copiar formatado**.
-4. No SEI, seleciona o bloco de tabelas do certificado (da seção "1. Dados
+4. No editor do SEI, selecione tudo (Ctrl+A) e cole (Ctrl+V) —
    do Cadastro" até "4. Local de emissão") e cola (Ctrl+V) por cima.
 
 ## Rodando localmente

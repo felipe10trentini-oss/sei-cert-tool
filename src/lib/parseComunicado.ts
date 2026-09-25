@@ -48,9 +48,11 @@ export function parseComunicado(text: string): ComunicadoData {
   }
 
   const razaoCnpj = values["razaoCnpj"] ?? "";
-  const m = razaoCnpj.match(/(.*?);\s*CNPJ\s*([\d./-]+)/);
+  // O CNPJ pode quebrar de linha no PDF ("...0001-" / "84"), por isso aceita
+  // espaços entre o hífen e os dígitos verificadores.
+  const m = razaoCnpj.match(/(.*?);\s*CNPJ\s*(\d{2}\.\d{3}\.\d{3}\/\d{4}-\s*\d{2})/);
   const clienteNome = m ? m[1].trim() : razaoCnpj || null;
-  const clienteCnpj = m ? m[2].trim() : null;
+  const clienteCnpj = m ? m[2].replace(/\s+/g, "") : null;
 
   return {
     comunicadoNumero: values["comunicadoNumero"] ?? null,
