@@ -10,7 +10,7 @@ export function Topbar() {
       </div>
       <div className="brand">
         <div className="brand-text">
-          <h1>Certificados TFQ</h1>
+          <h1>Certificados TFQ - MANN Móvel</h1>
           <span>Certificado de tratamento fitossanitário · preenchimento automático do SEI</span>
         </div>
       </div>
