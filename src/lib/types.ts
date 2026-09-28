@@ -42,6 +42,7 @@ export interface CurvaData {
   responsavelTecnico: string | null;
   operador: string | null;
   volumeTotalPecas: string | null;
+  concluido: boolean;
   descricaoCurva: string | null;
 }
 
@@ -78,9 +79,23 @@ export interface CertificadoCampos {
   responsavelTecnico: string;
 }
 
+export interface Divergencia {
+  /** "erro" trava a cópia até o usuário confirmar; "atencao" só informa. */
+  nivel: "erro" | "atencao";
+  campo: string;
+  /** Valor do lado do comunicado (ou "agora", nas checagens de histórico). */
+  comunicado: string;
+  /** Valor do lado da curva (ou "histórico", nas checagens de histórico). */
+  curva: string;
+  detalhe: string;
+  /** Nomes dos dois lados na tela; padrão ["Comunicado", "Curva"]. */
+  rotulos?: [string, string];
+}
+
 export interface ExtractResult {
   campos: CertificadoCampos;
   avisos: string[];
   clienteEncontrado: boolean;
   mapa?: import("./mapaPlanilha").MapaLinha;
+  divergencias?: Divergencia[];
 }

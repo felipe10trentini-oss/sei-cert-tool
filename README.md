@@ -63,6 +63,21 @@ Abre em http://localhost:3000
   É uma proteção provisória até existir login por usuário.
 - `npm run regress:mapa` compara a linha gerada com linhas reais já lançadas na planilha.
 
+## Travas de conferência
+
+Ao extrair, o site compara o comunicado com a curva e mostra as divergências (valor de cada lado):
+data do tratamento (dia/mês/ano), descrição do material item a item, quantidade total (soma do comunicado x
+volume total da curva), temperatura, duração e lote (nome do arquivo x curva). Havendo divergência, os botões de
+copiar ficam travados até marcar "Conferi as divergências". Avisos amarelos (não travam): curva sem "(concluído)",
+comunicado gerado depois do tratamento e início antes do horário comunicado.
+
+Histórico: ao copiar o certificado o site registra a emissão (tabela `certificados_emitidos`, pede a senha da
+equipe) e passa a avisar quando o mesmo certificado ou comunicado for usado de novo.
+
+- `npm run test:validacoes` roda casos sintéticos de cada regra.
+- `npm run validar:lote -- "CERT 1489 " "CERT 1495 "` mede falsos alarmes em certificados já emitidos (use poucos
+  certificados: ler muitos arquivos do OneDrive faz o OneDrive baixá-los).
+
 ## Deploy (Vercel)
 
 1. Suba este repositório para o GitHub.

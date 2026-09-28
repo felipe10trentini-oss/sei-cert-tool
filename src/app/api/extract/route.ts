@@ -6,6 +6,8 @@ import { buildCertificado } from "@/lib/buildCertificado";
 import { lookupClienteByCnpj } from "@/lib/clientes";
 import { guessNumeroCertificado } from "@/lib/numeroCertificado";
 import { buildLinhaMapa } from "@/lib/buildMapa";
+import { validarComunicadoCurva } from "@/lib/validacoes";
+import { verificarDuplicidade } from "@/lib/historico";
 
 export const runtime = "nodejs";
 
@@ -58,7 +60,20 @@ export async function POST(req: NextRequest) {
       numeroCertificado,
     });
 
-    return NextResponse.json({ ...resultado, mapa });
+    const divergencias = [
+      ...validarComunicadoCurva({
+        curva,
+        comunicado,
+        nomeArquivoCurva: curvaFile.name,
+        comunicadoCriadoEm: comunicadoPdf.criadoEm,
+      }),
+      ...(await verificarDuplicidade({
+        numeroCertificado,
+        numeroComunicado: comunicado.comunicadoNumero,
+      })),
+    ].sort((a, b) => Number(b.nivel === "erro") - Number(a.nivel === "erro"));
+
+    return NextResponse.json({ ...resultado, mapa, divergencias });
   } catch (err) {
     console.error("Falha ao extrair PDFs", err);
     return NextResponse.json(

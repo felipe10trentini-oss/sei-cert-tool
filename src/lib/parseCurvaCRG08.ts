@@ -34,6 +34,8 @@ export function parseCurvaCRG08(text: string): CurvaData {
   const mOperador = text.match(/Operador:\s*(.+)/);
   const mVolume = text.match(/Volume total:\s*(\d+)\s*peças/i);
   const mDescricao = text.match(/Descrição:\s*(.+)/);
+  // Layout 2 não tem "Descrição:": a descrição fica entre "Programa:" e "Produto(s):".
+  const mDescricao2 = text.match(/Programa:[^\n]*\n([\s\S]*?)\n\s*Produto\(s\):/);
   const mSerie = text.match(/Relatório do Controlador Nº (\d+) \(Nº Série:\s*([\w-]+)\)/);
 
   const dataInicio = mInicio ? mInicio[1] : null;
@@ -67,6 +69,11 @@ export function parseCurvaCRG08(text: string): CurvaData {
     responsavelTecnico: mResp ? mResp[1].trim() : null,
     operador: mOperador ? mOperador[1].trim() : null,
     volumeTotalPecas: mVolume ? mVolume[1] : null,
-    descricaoCurva: mDescricao ? mDescricao[1].trim() : null,
+    descricaoCurva: mDescricao
+      ? mDescricao[1].trim()
+      : mDescricao2
+        ? mDescricao2[1].replace(/\s+/g, " ").trim() || null
+        : null,
+    concluido: /\(conclu[ií]do\)/i.test(text),
   };
 }

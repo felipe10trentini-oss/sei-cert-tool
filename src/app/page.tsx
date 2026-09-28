@@ -107,6 +107,7 @@ export default function Home() {
             avisos={resultado.avisos}
             clienteEncontrado={resultado.clienteEncontrado}
             mapa={resultado.mapa}
+            divergencias={resultado.divergencias}
             onNovo={novoCertificado}
             onCopiado={() => setCopiado(true)}
           />

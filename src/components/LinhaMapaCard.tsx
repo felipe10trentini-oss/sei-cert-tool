@@ -6,6 +6,7 @@ interface Props {
   linha: MapaLinha;
   onAjustar: (key: MapaKey, valor: string) => void;
   onCopiar: () => void;
+  desabilitado?: boolean;
 }
 
 // Campos que os PDFs não trazem com certeza; o resto sai pronto da extração.
@@ -18,7 +19,7 @@ const AJUSTES: MapaKey[] = [
   "dataEmissao",
 ];
 
-export function LinhaMapaCard({ linha, onAjustar, onCopiar }: Props) {
+export function LinhaMapaCard({ linha, onAjustar, onCopiar, desabilitado }: Props) {
   return (
     <section>
       <div className="section-title">
@@ -70,7 +71,7 @@ export function LinhaMapaCard({ linha, onAjustar, onCopiar }: Props) {
       </div>
 
       <div className="actions">
-        <button type="button" className="btn primary lg" onClick={onCopiar}>
+        <button type="button" className="btn primary lg" onClick={onCopiar} disabled={desabilitado}>
           Copiar linha do relatório
         </button>
         <span className="hint">Cole na coluna A da próxima linha vazia da aba TÉRMICO.</span>

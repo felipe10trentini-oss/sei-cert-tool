@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CertificadoCampos } from "@/lib/types";
+import type { CertificadoCampos, Divergencia } from "@/lib/types";
+import { cabecalhoSenha, useSenhaEquipe } from "@/lib/senhaEquipe";
 import { LINHAS, ROTULOS, type CampoComRotulo } from "@/lib/certificadoFields";
 import { buildCertificadoHtml } from "@/lib/certificadoTemplate";
 import { linhaParaTsv, type MapaKey, type MapaLinha } from "@/lib/mapaPlanilha";
@@ -12,6 +13,7 @@ interface Props {
   avisos: string[];
   clienteEncontrado: boolean;
   mapa?: MapaLinha;
+  divergencias?: Divergencia[];
   onNovo: () => void;
   onCopiado: () => void;
 }
@@ -30,8 +32,25 @@ const CHAVES_EDITAVEIS: CampoComRotulo[] = LINHAS.flatMap((linha) => {
   return [];
 });
 
-export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, mapa, onNovo, onCopiado }: Props) {
+export function CertificatePreview({
+  camposIniciais,
+  avisos,
+  clienteEncontrado,
+  mapa,
+  divergencias = [],
+  onNovo,
+  onCopiado,
+}: Props) {
   const [campos, setCampos] = useState<CertificadoCampos>(camposIniciais);
+  const erros = divergencias.filter((d) => d.nivel === "erro");
+  const atencoes = divergencias.filter((d) => d.nivel === "atencao");
+  const [ciente, setCiente] = useState(false);
+  const trava = erros.length > 0 && !ciente;
+  const { senha, definir } = useSenhaEquipe();
+  const [pedirSenha, setPedirSenha] = useState(false);
+  const [senhaDigitada, setSenhaDigitada] = useState("");
+  const [registrado, setRegistrado] = useState(false);
+  const [erroRegistro, setErroRegistro] = useState<string | null>(null);
   const [editando, setEditando] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [linhaMapa, setLinhaMapa] = useState<MapaLinha | undefined>(mapa);
@@ -49,7 +68,41 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
     setCampos((prev) => ({ ...prev, [key]: value }));
   }
 
+  /** Registra a emissão no histórico (usado para acusar certificado/comunicado repetido). */
+  async function registrar(senhaUsada: string) {
+    if (!linhaMapaAtual) return;
+    setErroRegistro(null);
+    try {
+      const res = await fetch("/api/historico", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...cabecalhoSenha(senhaUsada) },
+        body: JSON.stringify({ linha: linhaMapaAtual }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        definir(null);
+        setPedirSenha(true);
+        setErroRegistro("Senha da equipe incorreta.");
+      } else if (!res.ok) {
+        setErroRegistro(data.error ?? "Não foi possível registrar no histórico.");
+      } else {
+        definir(senhaUsada);
+        setPedirSenha(false);
+        setRegistrado(true);
+      }
+    } catch {
+      setErroRegistro("Não foi possível conectar ao servidor para registrar no histórico.");
+    }
+  }
+
+  function bloqueado(): boolean {
+    if (!trava) return false;
+    setToast("Há divergências: marque “Conferi as divergências” para poder copiar.");
+    return true;
+  }
+
   async function copiar() {
+    if (bloqueado()) return;
     const texto = docRef.current?.innerText ?? "";
     try {
       try {
@@ -64,6 +117,10 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
       }
       setToast("Copiado! No editor do SEI: Ctrl+A e Ctrl+V.");
       onCopiado();
+      if (!registrado) {
+        if (senha) void registrar(senha);
+        else setPedirSenha(true);
+      }
     } catch {
       setToast("Não foi possível copiar. Permita o acesso à área de transferência e tente de novo.");
     }
@@ -73,7 +130,7 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
   const linhaMapaAtual = linhaMapa ? { ...linhaMapa, numCertificado: campos.numeroCertificado } : undefined;
 
   async function copiarLinhaRelatorio() {
-    if (!linhaMapaAtual) return;
+    if (!linhaMapaAtual || bloqueado()) return;
     try {
       await navigator.clipboard.writeText(linhaParaTsv(linhaMapaAtual));
       setToast("Linha copiada! Cole na coluna A da próxima linha vazia da aba TÉRMICO.");
@@ -90,6 +147,44 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
 
   return (
     <div className="view">
+      {erros.length > 0 && (
+        <div className="alert-box critical" role="alert">
+          <h4>Divergências encontradas — confira antes de copiar</h4>
+          <ul className="diverg">
+            {erros.map((d, i) => (
+              <li key={i}>
+                <b>{d.campo}</b> — {d.detalhe}
+                <span className="diverg-lados mono">
+                  {(d.rotulos ?? ["Comunicado", "Curva"])[0]}: {d.comunicado}
+                  <br />
+                  {(d.rotulos ?? ["Comunicado", "Curva"])[1]}: {d.curva}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <label className="ciente">
+            <input type="checkbox" checked={ciente} onChange={(e) => setCiente(e.target.checked)} />
+            Conferi as divergências e quero continuar mesmo assim
+          </label>
+        </div>
+      )}
+
+      {atencoes.length > 0 && (
+        <div className="alert-box">
+          <h4>Atenção</h4>
+          <ul className="diverg">
+            {atencoes.map((d, i) => (
+              <li key={i}>
+                <b>{d.campo}</b> — {d.detalhe}
+                <span className="diverg-lados mono">
+                  {(d.rotulos ?? ["Comunicado", "Curva"])[0]}: {d.comunicado} · {(d.rotulos ?? ["Comunicado", "Curva"])[1]}: {d.curva}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {avisos.length > 0 && (
         <div className="alert-box">
           <h4>Confira antes de copiar</h4>
@@ -168,14 +263,53 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
           Novo certificado
         </button>
         {linhaMapaAtual && (
-          <button type="button" className="btn lg" onClick={copiarLinhaRelatorio}>
+          <button type="button" className="btn lg" onClick={copiarLinhaRelatorio} disabled={trava}>
             Copiar linha do relatório
           </button>
         )}
-        <button type="button" className="btn primary lg" onClick={copiar}>
+        <button type="button" className="btn primary lg" onClick={copiar} disabled={trava}>
           Copiar certificado
         </button>
       </div>
+
+      {pedirSenha && !registrado && (
+        <div className="card" style={{ marginBottom: 14 }}>
+          <div className="toolbar" style={{ marginBottom: 0 }}>
+            <div className="field" style={{ flex: 1, minWidth: 220 }}>
+              <label htmlFor="senha-historico">Registrar no histórico — senha da equipe</label>
+              <input
+                id="senha-historico"
+                type="password"
+                autoComplete="current-password"
+                value={senhaDigitada}
+                onChange={(e) => setSenhaDigitada(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              className="btn primary"
+              disabled={!senhaDigitada}
+              onClick={() => registrar(senhaDigitada)}
+            >
+              Registrar
+            </button>
+          </div>
+          <p className="hint">
+            O histórico avisa quando um certificado ou comunicado já foi usado antes. Você pode ignorar; a
+            cópia já foi feita.
+          </p>
+          {erroRegistro && <p style={{ color: "var(--bad)", fontSize: 13, margin: "6px 0 0" }}>{erroRegistro}</p>}
+        </div>
+      )}
+      {registrado && (
+        <p className="hint" style={{ margin: "0 0 14px" }}>
+          <span className="badge pago">Registrado no histórico</span> Se este certificado ou comunicado for
+          usado de novo, o sistema avisa.
+        </p>
+      )}
+      {erroRegistro && !pedirSenha && (
+        <p style={{ color: "var(--bad)", fontSize: 13, margin: "0 0 14px" }}>{erroRegistro}</p>
+      )}
 
       {editando && (
         <div className="card" style={{ marginBottom: 18 }}>
@@ -213,13 +347,18 @@ export function CertificatePreview({ camposIniciais, avisos, clienteEncontrado, 
       </div>
 
       <div className="toolbar" style={{ marginTop: 18, justifyContent: "flex-end" }}>
-        <button type="button" className="btn primary lg" onClick={copiar}>
+        <button type="button" className="btn primary lg" onClick={copiar} disabled={trava}>
           Copiar certificado
         </button>
       </div>
 
       {linhaMapaAtual && (
-        <LinhaMapaCard linha={linhaMapaAtual} onAjustar={ajustarLinha} onCopiar={copiarLinhaRelatorio} />
+        <LinhaMapaCard
+          linha={linhaMapaAtual}
+          onAjustar={ajustarLinha}
+          onCopiar={copiarLinhaRelatorio}
+          desabilitado={trava}
+        />
       )}
 
       {toast && (

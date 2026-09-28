@@ -9,7 +9,9 @@
     "lint": "eslint",
     "import:clientes": "tsx scripts/import-clientes.ts",
     "regress": "node scripts/regress.mjs",
-    "regress:mapa": "node scripts/regress-mapa.mjs"
+    "regress:mapa": "node scripts/regress-mapa.mjs",
+    "validar:lote": "node scripts/validar-lote.mjs",
+    "test:validacoes": "tsx scripts/teste-validacoes.ts"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.9",
