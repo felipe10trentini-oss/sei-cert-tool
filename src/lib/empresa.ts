@@ -24,7 +24,8 @@ export const MARCAS_DISTINTIVAS_FIXO = "Nihil";
 export const MAPA_CONSTANTES = {
   objetivo: "Atendimento à NIMF15",
   finalidade: "Exp.",
-  processoComunicado: "21034.012876/2026-29",
+  // Muda quando o SEI abre um novo processo de comunicados (até o certificado 1479: 21034.012876/2026-29).
+  processoComunicado: "21034.036632/2026-31",
   unidades: "Unidades",
   volumeCamara: "56",
 } as const;
